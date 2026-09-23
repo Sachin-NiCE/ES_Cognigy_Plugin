@@ -10,10 +10,10 @@ The project has two parts:
   to be deployed once on a shared host (e.g. a Linux VM). It holds no Cognigy
   credentials itself; every request carries the caller's own Cognigy API base
   URL and key as headers. See `server/README.md` for deployment instructions.
-- **`plugin/`** — the actual Claude Code plugin, kept deliberately minimal:
-  a manifest, an `.mcp.json` pointing at your deployed server, and a
-  `/cognigy-setup` command. No Python or install step is needed on the end
-  user's machine at all.
+- **`plugin/`** — the actual Claude Code plugin: a manifest, an `.mcp.json`
+  pointing at your deployed server, a `/cognigy-setup` command, and a skill
+  per feature area that auto-loads workflow guidance for the tools. No Python
+  or install step is needed on the end user's machine at all.
 
 ## For end users: installing the plugin
 
@@ -54,7 +54,10 @@ plugin/
   .mcp.json                    — points at the hosted server; headers carry
                                   Cognigy credentials (filled in by /cognigy-setup)
   commands/cognigy-setup.md    — the /cognigy-setup command
-  skills/, agents/              — empty for now; see plugin/README.md for how
+  skills/snapshot-backups/     — guidance for list/create/restore/delete_snapshot
+  skills/package-management/   — guidance for export/import/download/inspect
+  skills/project-settings/     — guidance for set_voice_preview/set_knowledge_ai
+  agents/                      — empty for now; see agents/README.md for how
                                   to add one later
 server/
   app.py                       — FastMCP app (Streamable HTTP), one tool per operation
@@ -76,6 +79,6 @@ nginx/certs/                   — put your corporate fullchain.pem/privkey.pem 
 ## What's next
 
 Additional Cognigy tools (agent creation, tools/flow-nodes, knowledge/RAG,
-voice gateway, etc.) will be added to `server/app.py` next, and the plugin's
-`skills/`/`agents/` folders are ready for guided workflows or multi-step
-subagents once we scope those — both to be discussed separately.
+voice gateway, etc.) will be added to `server/app.py` next, each with a
+matching skill; the plugin's `agents/` folder is ready for multi-step
+subagents once we scope one — both to be discussed separately.

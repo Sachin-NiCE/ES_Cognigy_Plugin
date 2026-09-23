@@ -102,6 +102,12 @@ def delete_snapshot(project_id: str, snapshot_id: str, ctx: Context) -> dict[str
     return manage_snapshots.delete_snapshot(_creds(ctx), project_id, snapshot_id)
 
 
+@mcp.tool()
+def read_snapshot_task(project_id: str, task_id: str, ctx: Context) -> dict[str, Any]:
+    """Poll a create/restore/delete Snapshot task that outlived its wait timeout."""
+    return manage_snapshots.read_task(_creds(ctx), project_id, task_id)
+
+
 # ---------------------------------------------------------------------------
 # Packages (export/import)
 # ---------------------------------------------------------------------------
@@ -159,6 +165,12 @@ def import_package(
     return manage_packages.import_package(
         _creds(ctx), project_id, package_id, resources=resources, locale_mapping=locale_mapping
     )
+
+
+@mcp.tool()
+def read_package_task(project_id: str, task_id: str, ctx: Context) -> dict[str, Any]:
+    """Poll an export/upload/import Package task that outlived its wait timeout."""
+    return manage_packages.read_task(_creds(ctx), project_id, task_id)
 
 
 # ---------------------------------------------------------------------------

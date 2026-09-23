@@ -8,5 +8,7 @@ centrally hosted MCP server (see `../server/`) over Streamable HTTP.
   Cognigy credentials (filled in by `/cognigy-setup`, never committed with
   real values)
 - `commands/cognigy-setup.md` — the `/cognigy-setup` command
-- `skills/`, `agents/` — empty for now; see their README.md for how to wire
-  a new skill or subagent into `plugin.json` when we add one
+- `skills/` — one per feature area (snapshot-backups, package-management,
+  project-settings); see `skills/README.md`
+- `agents/` — empty for now; see `agents/README.md` for how to wire a
+  subagent into `plugin.json` when we add one
