@@ -1,6 +1,6 @@
 """manage_packages: export/import Cognigy package .zip files.
 
-Endpoints (see mcp/cognigy_client.py for prefix/auth conventions):
+Endpoints (see server/cognigy_client.py for prefix/auth conventions):
     GET  /new/v2.0/projects/{projectId}/graph?packages=false&dependencies=true
          -> project resource graph, used to derive exportable resources
             and to resolve dependencies before export
@@ -15,6 +15,12 @@ Endpoints (see mcp/cognigy_client.py for prefix/auth conventions):
 Async ops (export, upload, merge) return a task, polled via
 CognigyClient.wait_for_task.
 
+NOTE (remote deployment): `download_package`'s `output_path` and
+`upload_and_inspect`'s `file_path` are paths on THIS SERVER's filesystem,
+not the end user's machine, since this server runs on a shared Linux host.
+Point them at a shared/mounted directory, or extend these tools to move
+bytes over the wire (e.g. base64) if per-user local files are needed.
+
 TODO (unverified against a live tenant): dedicated list/delete package
 endpoints (likely GET/DELETE /new/v2.0/packages) were not exercised in the
 reference implementation we studied - confirm paths before relying on them.
@@ -25,15 +31,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
-from cognigy_client import CognigyClient
+from cognigy_client import CognigyClient, CognigyCreds
 
 
-def list_exportable(project_id: str) -> dict[str, Any]:
-    graph = _project_graph(project_id, packages=False, dependencies=True)
+def list_exportable(creds: CognigyCreds, project_id: str) -> dict[str, Any]:
+    graph = _project_graph(creds, project_id, packages=False, dependencies=True)
     return {"projectId": project_id, "graph": graph}
 
 
 def export_package(
+    creds: CognigyCreds,
     project_id: str,
     resource_ids: list[str],
     name: str,
@@ -47,7 +54,7 @@ def export_package(
         "description": description or "",
         "resourceIds": resource_ids,
     }
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         task = client.post("/new/v2.0/packages", json=body)
         if not wait_for_completion:
             return {"task": task}
@@ -56,8 +63,8 @@ def export_package(
         return {"task": final, "packageId": package_id}
 
 
-def download_package(project_id: str, package_id: str, output_path: str) -> dict[str, Any]:
-    with CognigyClient() as client:
+def download_package(creds: CognigyCreds, project_id: str, package_id: str, output_path: str) -> dict[str, Any]:
+    with CognigyClient(*creds) as client:
         metadata = client.get(f"/new/v2.0/packages/{package_id}")
         link_resp = client.post(f"/new/v2.0/packages/{package_id}/downloadlink")
         download_link = link_resp.get("downloadLink")
@@ -76,6 +83,7 @@ def download_package(project_id: str, package_id: str, output_path: str) -> dict
 
 
 def upload_and_inspect(
+    creds: CognigyCreds,
     project_id: str,
     file_path: str,
     wait_for_completion: bool = True,
@@ -85,7 +93,7 @@ def upload_and_inspect(
     if not path.exists():
         raise FileNotFoundError(f"Package file not found: {file_path}")
 
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         with open(path, "rb") as f:
             task = client.post(
                 "/new/v2.0/packages/upload",
@@ -98,12 +106,12 @@ def upload_and_inspect(
         package_id = (task.get("data") or {}).get("packageId")
         if not package_id:
             return {"task": task}
-        return inspect_package(project_id, package_id)
+        return inspect_package(creds, project_id, package_id)
 
 
-def inspect_package(project_id: str, package_id: str) -> dict[str, Any]:
-    with CognigyClient() as client:
-        project_graph = _project_graph(project_id, packages=True, dependencies=True, _client=client)
+def inspect_package(creds: CognigyCreds, project_id: str, package_id: str) -> dict[str, Any]:
+    with CognigyClient(*creds) as client:
+        project_graph = _project_graph(creds, project_id, packages=True, dependencies=True, _client=client)
         package_node = project_graph.get(package_id) or {}
         project_node = project_graph.get(project_id) or {}
     return {
@@ -119,6 +127,7 @@ def inspect_package(project_id: str, package_id: str) -> dict[str, Any]:
 
 
 def import_package(
+    creds: CognigyCreds,
     project_id: str,
     package_id: str,
     resources: Optional[list[dict[str, Any]]] = None,
@@ -148,7 +157,7 @@ def import_package(
     if locale_mapping:
         body["localeMapping"] = locale_mapping
 
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         task = client.post(f"/new/v2.0/packages/{package_id}/merge", json=body)
         if not wait_for_completion:
             return {"task": task}
@@ -156,12 +165,13 @@ def import_package(
         return {"task": final, "imported": final.get("status") == "done"}
 
 
-def read_task(project_id: str, task_id: str) -> dict[str, Any]:
-    with CognigyClient() as client:
+def read_task(creds: CognigyCreds, project_id: str, task_id: str) -> dict[str, Any]:
+    with CognigyClient(*creds) as client:
         return client.get_task(task_id, project_id)
 
 
 def _project_graph(
+    creds: CognigyCreds,
     project_id: str,
     packages: bool,
     dependencies: bool,
@@ -175,5 +185,5 @@ def _project_graph(
 
     if _client is not None:
         return _fetch(_client)
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         return _fetch(client)

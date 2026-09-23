@@ -7,8 +7,8 @@
   "plugins": [
     {
       "name": "cognigy",
-      "source": "./",
-      "description": "Connect Claude Code to Cognigy.AI (snapshots, packages, settings)"
+      "source": "./plugin",
+      "description": "Connect Claude Code to Cognigy.AI via a centrally hosted MCP server (snapshots, packages, project settings)"
     }
   ]
 }

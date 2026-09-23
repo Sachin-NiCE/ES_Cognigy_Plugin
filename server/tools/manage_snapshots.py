@@ -5,7 +5,7 @@ LLMs, lexicons, extensions, functions, playbooks, locales). It does NOT
 capture endpoints, Knowledge AI content, intent trainer data, analytics, or
 logs — say so before creating or restoring.
 
-Endpoints (see mcp/cognigy_client.py for prefix/auth conventions):
+Endpoints (see server/cognigy_client.py for prefix/auth conventions):
     GET    /v2.0/snapshots?projectId=...
     POST   /v2.0/snapshots                body: {projectId, name, description}
     POST   /v2.0/snapshots/{id}/restore   body: {projectId}
@@ -22,7 +22,7 @@ import re
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from cognigy_client import CognigyClient
+from cognigy_client import CognigyClient, CognigyCreds
 
 _NON_RESOURCE_NAME_CHARS = re.compile(r"[^A-Za-z0-9_-]+")
 
@@ -42,6 +42,7 @@ def _default_snapshot_name(client: CognigyClient, project_id: str) -> str:
 
 
 def list_snapshots(
+    creds: CognigyCreds,
     project_id: str,
     limit: int = 25,
     skip: int = 0,
@@ -50,11 +51,12 @@ def list_snapshots(
     params: dict[str, Any] = {"projectId": project_id, "limit": limit, "skip": skip}
     if name_filter:
         params["filter"] = name_filter
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         return client.get("/v2.0/snapshots", params=params)
 
 
 def create_snapshot(
+    creds: CognigyCreds,
     project_id: str,
     name: Optional[str] = None,
     description: Optional[str] = None,
@@ -62,7 +64,7 @@ def create_snapshot(
     timeout_s: float = 600.0,
 ) -> dict[str, Any]:
     """If `name` is omitted, it defaults to "<ProjectName>-<Mon DD>-<HH:MM>" (UTC)."""
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         if not name:
             name = _default_snapshot_name(client, project_id)
         body = {"projectId": project_id, "name": name, "description": description or ""}
@@ -74,6 +76,7 @@ def create_snapshot(
 
 
 def restore_snapshot(
+    creds: CognigyCreds,
     project_id: str,
     snapshot_id: str,
     confirm: bool = False,
@@ -99,7 +102,7 @@ def restore_snapshot(
             "snapshotId": snapshot_id,
         }
 
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         task = client.post(f"/v2.0/snapshots/{snapshot_id}/restore", json={"projectId": project_id})
         if not wait_for_completion:
             return {"task": task}
@@ -107,12 +110,12 @@ def restore_snapshot(
         return {"task": final, "restored": final.get("status") == "done"}
 
 
-def delete_snapshot(project_id: str, snapshot_id: str) -> dict[str, Any]:
-    with CognigyClient() as client:
+def delete_snapshot(creds: CognigyCreds, project_id: str, snapshot_id: str) -> dict[str, Any]:
+    with CognigyClient(*creds) as client:
         client.delete(f"/v2.0/snapshots/{snapshot_id}", params={"projectId": project_id})
     return {"deleted": True, "snapshotId": snapshot_id}
 
 
-def read_task(project_id: str, task_id: str) -> dict[str, Any]:
-    with CognigyClient() as client:
+def read_task(creds: CognigyCreds, project_id: str, task_id: str) -> dict[str, Any]:
+    with CognigyClient(*creds) as client:
         return client.get_task(task_id, project_id)

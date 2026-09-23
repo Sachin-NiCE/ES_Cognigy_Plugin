@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "cognigy": {
+      "type": "streamable-http",
+      "url": "https://REPLACE-WITH-YOUR-COGNIGY-MCP-SERVER/mcp",
+      "headers": {
+        "X-Cognigy-Base-Url": "",
+        "X-Cognigy-Api-Key": ""
+      }
+    }
+  }
+}

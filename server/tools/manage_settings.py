@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from cognigy_client import CognigyClient
+from cognigy_client import CognigyClient, CognigyCreds
 
 SPEECH_PROVIDERS = {
     "microsoft": "MicrosoftSpeechProvider",
@@ -26,6 +26,7 @@ SPEECH_PROVIDERS = {
 
 
 def set_voice_preview(
+    creds: CognigyCreds,
     project_id: str,
     provider: str,
     connection_id: Optional[str] = None,
@@ -35,7 +36,7 @@ def set_voice_preview(
             f"Unsupported speech provider '{provider}'. Supported: {', '.join(SPEECH_PROVIDERS)}."
         )
 
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         if not connection_id:
             connection_id = _find_speech_connection(client, project_id, provider)
             if not connection_id:
@@ -60,6 +61,7 @@ def set_voice_preview(
 
 
 def set_knowledge_ai(
+    creds: CognigyCreds,
     project_id: str,
     knowledge_search_model_id: Optional[str] = None,
     answer_extraction_model_id: Optional[str] = None,
@@ -91,7 +93,7 @@ def set_knowledge_ai(
             "or content_parser."
         )
 
-    with CognigyClient() as client:
+    with CognigyClient(*creds) as client:
         result = client.patch(f"/new/v2.0/projects/{project_id}/settings", json=body)
 
     return {"configured": True, "result": result}

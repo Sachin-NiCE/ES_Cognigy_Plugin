@@ -1,83 +1,71 @@
 # ES Cognigy Claude Plugin
 
-A Claude Code plugin (Python) that connects to a Cognigy.AI instance — manage
-project snapshots (backup/restore), packages (export/import), and project
-settings (voice preview, Knowledge AI) directly from Claude.
+Connects Claude Code to Cognigy.AI — manage project snapshots (backup/restore),
+packages (export/import), and project settings (voice preview, Knowledge AI)
+directly from Claude.
 
-## Installation
+The project has two parts:
 
-**Two steps.**
+- **`server/`** — a stateless MCP server exposed over Streamable HTTP, meant
+  to be deployed once on a shared host (e.g. a Linux VM). It holds no Cognigy
+  credentials itself; every request carries the caller's own Cognigy API base
+  URL and key as headers. See `server/README.md` for deployment instructions.
+- **`plugin/`** — the actual Claude Code plugin, kept deliberately minimal:
+  a manifest, an `.mcp.json` pointing at your deployed server, and a
+  `/cognigy-setup` command. No Python or install step is needed on the end
+  user's machine at all.
 
-### Step 1 — run the installer
+## For end users: installing the plugin
 
-The installer checks for Python 3.10+ and installs it if it's missing, then
-creates an isolated virtual environment for the plugin's dependencies so
-nothing is installed into your system/global Python.
-
-**macOS / Linux:**
-```
-bash install.sh
-```
-If Python isn't found, it installs one via Homebrew (macOS) or apt/dnf/yum
-(Linux, will prompt for `sudo`). If none of those package managers are
-available, it prints a link to https://www.python.org/downloads/ and stops.
-
-**Windows (PowerShell):**
-```
-powershell -ExecutionPolicy Bypass -File install.ps1
-```
-If Python isn't found, it installs one via `winget` in user scope (no admin
-required). If `winget` isn't available, it prints a link to
-https://www.python.org/downloads/ and stops.
-
-Either script then:
-1. Creates `.venv/` in this folder and installs `requirements.txt` into it
-2. Rewrites `.mcp.json` to run the MCP server with that venv's interpreter
-   (so it never depends on a bare `python`/`python3` being on your PATH)
-3. Prompts you for your **Cognigy API base URL** and **API key**
-
-### Step 2 — install the plugin in Claude Code
+### Step 1 — add the marketplace and install
 
 ```
-/plugin marketplace add <path to this folder>
+/plugin marketplace add <path or URL to this repo>
 /plugin install cognigy@es-cognigy-plugin-dev
 ```
 Then restart Claude Code.
 
-### Updating credentials later
+### Step 2 — point it at your Cognigy MCP server
 
-Re-run the installer, or from inside Claude Code run `/cognigy-setup`, or
-directly:
 ```
-.venv/bin/python scripts/configure.py --show    # macOS/Linux
-.venv\Scripts\python.exe scripts\configure.py --show   # Windows
+/cognigy-setup
 ```
-Credentials are stored locally at `~/.claude/cognigy-plugin/config.json`
-(owner-only permissions), never committed to this repo.
+You'll be asked for:
+- the Cognigy MCP server URL (ask your admin — see `server/README.md`)
+- your Cognigy API base URL (e.g. `https://api-trial.cognigy.ai`)
+- your Cognigy API key
 
-> **Note:** the installer rewrites `.mcp.json` with an absolute, machine-local
-> path to `.venv`'s interpreter. Don't commit that change — it's specific to
-> your machine. If you pull updates and want a clean `.mcp.json`, run
-> `git checkout .mcp.json` and re-run the installer.
+This writes those values into `plugin/.mcp.json` on your machine (not
+committed back to git). Restart Claude Code / run `/mcp` afterwards to
+reconnect.
 
-## What's here
+## For admins: deploying the server
 
-- `install.sh` / `install.ps1` — installers (Python bootstrap + venv + config)
-- `.claude-plugin/plugin.json` — plugin manifest
-- `.mcp.json` — registers the Python MCP server (`mcp/server.py`)
-- `mcp/server.py` — the MCP server; exposes the tools below
-- `mcp/cognigy_client.py` — shared Cognigy REST client (auth, async task polling)
-- `mcp/cognigy_config.py` — shared config read/write helpers
-- `mcp/tools/manage_snapshots.py` — project backup/restore
-- `mcp/tools/manage_packages.py` — package export/import
-- `mcp/tools/manage_settings.py` — voice preview & Knowledge AI settings
-- `scripts/configure.py` — CLI used by `/cognigy-setup` to store credentials
-- `scripts/write_mcp_config.py` — used by the installers to wire up `.mcp.json`
-- `hooks/` — SessionStart hook that reminds the user to run setup if unconfigured
-- `commands/cognigy-setup.md` — the `/cognigy-setup` slash command
+See `server/README.md` — run it locally for dev, or deploy behind TLS with
+uvicorn + systemd on a Linux host. Give the resulting URL to your users for
+step 2 above.
+
+## Repo layout
+
+```
+plugin/
+  .claude-plugin/plugin.json   — plugin manifest
+  .mcp.json                    — points at the hosted server; headers carry
+                                  Cognigy credentials (filled in by /cognigy-setup)
+  commands/cognigy-setup.md    — the /cognigy-setup command
+server/
+  app.py                       — FastMCP app (Streamable HTTP), one tool per operation
+  cognigy_client.py            — shared Cognigy REST client (auth, task polling)
+  tools/manage_snapshots.py    — project backup/restore
+  tools/manage_packages.py     — package export/import
+  tools/manage_settings.py     — voice preview & Knowledge AI settings
+  requirements.txt
+  README.md                    — deployment instructions
+.claude-plugin/marketplace.json — marketplace manifest (source: ./plugin)
+```
 
 ## What's next
 
 Additional Cognigy tools (agent creation, tools/flow-nodes, knowledge/RAG,
-voice gateway, etc.) will be added to `mcp/server.py` next — to be scoped
+voice gateway, etc.) will be added to `server/app.py` next — to be scoped
 separately.

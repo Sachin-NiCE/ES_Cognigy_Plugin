@@ -6,18 +6,27 @@ Endpoint prefixes are split, matching the platform's own routing:
 
 Both prefixes hit the same API and share auth (X-API-Key) and error shape
 (RFC 7807 Problem Details).
+
+This server is a STATELESS proxy: it never stores a Cognigy base URL or API
+key. Every call must be given the caller's own credentials explicitly (see
+app.py, which reads them from per-request headers and passes them through).
 """
 
 from __future__ import annotations
 
 import time
-from typing import Any, Optional
+from typing import Any, NamedTuple, Optional
 
 import httpx
 
-from cognigy_config import get_api_key, get_base_url
-
 TERMINAL_TASK_STATUSES = {"done", "error", "cancelled"}
+
+
+class CognigyCreds(NamedTuple):
+    """Per-request Cognigy credentials, extracted from request headers by app.py."""
+
+    base_url: str
+    api_key: str
 
 
 class CognigyAPIError(RuntimeError):
@@ -36,13 +45,11 @@ class CognigyTaskError(RuntimeError):
 
 
 class CognigyClient:
-    def __init__(self) -> None:
-        base_url = get_base_url()
-        api_key = get_api_key()
+    def __init__(self, base_url: str, api_key: str) -> None:
         if not base_url or not api_key:
-            raise RuntimeError(
-                "Cognigy is not configured. Ask the user to run /cognigy-setup "
-                "to set the API base URL and API key."
+            raise ValueError(
+                "Missing Cognigy credentials: both X-Cognigy-Base-Url and "
+                "X-Cognigy-Api-Key headers are required on every request."
             )
         self.base_url = base_url.rstrip("/")
         self._client = httpx.Client(
