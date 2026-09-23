@@ -1,0 +1,14 @@
+{
+  "name": "es-cognigy-plugin-dev",
+  "owner": {
+    "name": "Sachin Pujari",
+    "email": "sachin.pujari@nice.com"
+  },
+  "plugins": [
+    {
+      "name": "cognigy",
+      "source": "./",
+      "description": "Connect Claude Code to Cognigy.AI (snapshots, packages, settings)"
+    }
+  ]
+}

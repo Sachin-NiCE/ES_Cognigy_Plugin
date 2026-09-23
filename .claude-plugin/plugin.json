@@ -1,0 +1,14 @@
+{
+  "name": "cognigy",
+  "description": "Connect Claude Code to a Cognigy.AI instance to manage projects, agents, flows, and more.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Sachin Pujari",
+    "email": "sachin.pujari@nice.com"
+  },
+  "commands": [
+    "./commands/cognigy-setup.md"
+  ],
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json"
+}
