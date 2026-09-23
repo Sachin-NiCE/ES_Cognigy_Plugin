@@ -41,7 +41,8 @@ reconnect.
 
 ## For admins: deploying the server
 
-See `server/README.md` — run it locally for dev, or deploy behind TLS with
+See `server/README.md` — run it in Docker (recommended; `docker compose up`,
+optionally with a bundled nginx reverse proxy for TLS) or directly with
 uvicorn + systemd on a Linux host. Give the resulting URL to your users for
 step 2 above.
 
@@ -53,19 +54,25 @@ plugin/
   .mcp.json                    — points at the hosted server; headers carry
                                   Cognigy credentials (filled in by /cognigy-setup)
   commands/cognigy-setup.md    — the /cognigy-setup command
+  skills/, agents/              — empty for now; see plugin/README.md for how
+                                  to add one later
 server/
   app.py                       — FastMCP app (Streamable HTTP), one tool per operation
   cognigy_client.py            — shared Cognigy REST client (auth, task polling)
   tools/manage_snapshots.py    — project backup/restore
   tools/manage_packages.py     — package export/import
   tools/manage_settings.py     — voice preview & Knowledge AI settings
+  Dockerfile, .dockerignore
   requirements.txt
   README.md                    — deployment instructions
+docker-compose.yml             — mcp service (+ optional nginx via --profile with-nginx)
+nginx/nginx.conf.example       — reverse proxy template (TLS termination)
 .claude-plugin/marketplace.json — marketplace manifest (source: ./plugin)
 ```
 
 ## What's next
 
 Additional Cognigy tools (agent creation, tools/flow-nodes, knowledge/RAG,
-voice gateway, etc.) will be added to `server/app.py` next — to be scoped
-separately.
+voice gateway, etc.) will be added to `server/app.py` next, and the plugin's
+`skills/`/`agents/` folders are ready for guided workflows or multi-step
+subagents once we scope those — both to be discussed separately.

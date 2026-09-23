@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Real nginx config/certs are host-specific and may contain secrets;
+# only nginx.conf.example is tracked.
+nginx/nginx.conf
+nginx/certs/

@@ -27,15 +27,49 @@ pip install -r requirements.txt
 python app.py --host 127.0.0.1 --port 8000
 ```
 
-## Production deployment (Linux, systemd + uvicorn)
+## Production deployment (Linux, Docker)
 
+**Do you need nginx?** Not strictly — uvicorn can terminate TLS itself with
+`--ssl-certfile`/`--ssl-keyfile`, or you may already have a load balancer /
+API gateway in front of this box. Use the `nginx` profile below if you want
+standard cert renewal (certbot/Let's Encrypt), to host this alongside other
+services on the same box, or just prefer a dedicated reverse proxy. Either
+way: **this server must never be reachable over plain HTTP**, since Cognigy
+API keys travel in every request's headers.
+
+### Option A — behind your own reverse proxy / load balancer
+
+```
+docker compose up -d
+```
+This starts just the `mcp` service, bound to `127.0.0.1:8000` on the host.
+Point your existing TLS-terminating proxy/load balancer at that.
+
+### Option B — with the bundled nginx (TLS termination included)
+
+```
+cp nginx/nginx.conf.example nginx/nginx.conf
+# edit nginx/nginx.conf: set server_name, and put your cert/key at
+# nginx/certs/fullchain.pem and nginx/certs/privkey.pem (e.g. from certbot)
+docker compose --profile with-nginx up -d
+```
+This exposes the server at `https://<your-domain>/mcp` on port 443.
+`nginx/nginx.conf` and `nginx/certs/` are gitignored — they're host-specific
+and may contain secrets, so they're never committed.
+
+### Rebuilding after a code change
+
+```
+docker compose build mcp
+docker compose up -d mcp        # or: docker compose --profile with-nginx up -d
+```
+
+### Without Docker (systemd + uvicorn directly)
+
+If you'd rather not use Docker:
 1. Clone this repo on the server, e.g. to `/opt/cognigy-mcp`.
-2. Set up the venv and install deps as above.
-3. Run behind a reverse proxy (nginx/Caddy) that terminates TLS — **this
-   server should never be exposed directly over plain HTTP**, since Cognigy
-   API keys travel in every request's headers.
-
-Example systemd unit (`/etc/systemd/system/cognigy-mcp.service`):
+2. Set up the venv and install deps as in "Local development" above.
+3. Use this systemd unit (`/etc/systemd/system/cognigy-mcp.service`):
 
 ```ini
 [Unit]
@@ -53,16 +87,14 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-Then:
 ```
 sudo systemctl daemon-reload
 sudo systemctl enable --now cognigy-mcp
 ```
 
-Point your reverse proxy at `127.0.0.1:8000` and expose it publicly (or on
-your internal network) at, e.g., `https://cognigy-mcp.internal.example.com/mcp`.
-Give that URL to end users to put in their plugin's `.mcp.json` (see
-`../plugin/README.md`).
+Either way, give the resulting public URL (e.g.
+`https://cognigy-mcp.internal.example.com/mcp`) to end users to put in their
+plugin's `.mcp.json` (see `../plugin/README.md`).
 
 ## Known limitations
 
@@ -76,6 +108,10 @@ Give that URL to end users to put in their plugin's `.mcp.json` (see
 
 ## Files
 
+- `Dockerfile` / `.dockerignore` — container image for this server
+- `../docker-compose.yml` — `mcp` service (always) + optional `nginx` service
+  (behind the `with-nginx` profile)
+- `../nginx/nginx.conf.example` — reverse proxy template (TLS termination)
 - `app.py` — the FastMCP app (Streamable HTTP), one `@mcp.tool()` per
   operation, extracting credentials from headers via `Context.request_context.request`
 - `cognigy_client.py` — shared Cognigy REST client (auth, RFC 7807 error
