@@ -1,10 +1,12 @@
 # Usage:
-#   docker compose up -d
+#   1. Put your corporate certificate + key at nginx/certs/fullchain.pem and
+#      nginx/certs/privkey.pem (see nginx/certs/README.md).
+#   2. Optionally set SERVER_NAME (below) to your real hostname.
+#   3. docker compose up -d
 #
-# Starts the MCP server bound to 127.0.0.1:8000 on the host. Put your
-# existing nginx (or other reverse proxy) in front of it - see
-# nginx/cognigy-mcp.conf for a drop-in config snippet using your
-# corporate TLS certificates.
+# nginx runs INSIDE this container alongside the app (see server/Dockerfile
+# and server/supervisord.conf) and terminates TLS on 443. No separate nginx
+# container or host nginx config is needed.
 
 services:
   mcp:
@@ -12,5 +14,13 @@ services:
       context: ./server
     image: cognigy-mcp:latest
     restart: unless-stopped
+    environment:
+      # nginx server_name; "_" (default) matches any hostname, which is fine
+      # for an IP-only or single-purpose host. Set this to your real FQDN if
+      # you want nginx to reject requests for other hostnames.
+      - SERVER_NAME=${SERVER_NAME:-_}
     ports:
-      - "127.0.0.1:8000:8000"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:ro

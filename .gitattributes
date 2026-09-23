@@ -1,0 +1,8 @@
+# This repo is often edited on Windows but always deployed on Linux;
+# CRLF line endings would break shell scripts (bad shebang parsing) and are
+# needless noise in Python/config files.
+*.sh text eol=lf
+*.py text eol=lf
+*.conf text eol=lf
+*.template text eol=lf
+Dockerfile text eol=lf

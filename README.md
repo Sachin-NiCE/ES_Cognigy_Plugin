@@ -41,10 +41,10 @@ reconnect.
 
 ## For admins: deploying the server
 
-See `server/README.md` — run it in Docker (`docker compose up`) and put your
-existing nginx (or other TLS-terminating reverse proxy) in front of it using
-`nginx/cognigy-mcp.conf`. Give the resulting URL to your users for step 2
-above.
+See `server/README.md`. nginx runs bundled inside the server's own container
+(TLS termination on 443) — just drop your corporate cert/key into
+`nginx/certs/` and `docker compose up -d --build`. Give the resulting URL to
+your users for step 2 above.
 
 ## Repo layout
 
@@ -62,11 +62,14 @@ server/
   tools/manage_snapshots.py    — project backup/restore
   tools/manage_packages.py     — package export/import
   tools/manage_settings.py     — voice preview & Knowledge AI settings
+  nginx/default.conf.template  — TLS reverse proxy config (bundled in-container)
+  supervisord.conf             — runs uvicorn + nginx as sibling processes
+  entrypoint.sh                — renders nginx config, checks certs, starts supervisord
   Dockerfile, .dockerignore
   requirements.txt
   README.md                    — deployment instructions
-docker-compose.yml             — the mcp service, bound to 127.0.0.1:8000
-nginx/cognigy-mcp.conf         — drop-in config for your existing nginx
+docker-compose.yml             — builds/runs the container, publishes 80/443
+nginx/certs/                   — put your corporate fullchain.pem/privkey.pem here (gitignored)
 .claude-plugin/marketplace.json — marketplace manifest (source: ./plugin)
 ```
 
