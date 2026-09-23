@@ -1,8 +1,10 @@
 # Usage:
-#   docker compose up -d                     # just the MCP server on 127.0.0.1:8000
-#   docker compose --profile with-nginx up -d  # + nginx reverse proxy terminating TLS on :443
+#   docker compose up -d
 #
-# See server/README.md for when you need the nginx profile vs. not.
+# Starts the MCP server bound to 127.0.0.1:8000 on the host. Put your
+# existing nginx (or other reverse proxy) in front of it - see
+# nginx/cognigy-mcp.conf for a drop-in config snippet using your
+# corporate TLS certificates.
 
 services:
   mcp:
@@ -10,21 +12,5 @@ services:
       context: ./server
     image: cognigy-mcp:latest
     restart: unless-stopped
-    # Bind to localhost only: either put nginx (below) or your own reverse
-    # proxy/load balancer in front, or change this to "8000:8000" if this
-    # host's network is already trusted/internal-only.
     ports:
       - "127.0.0.1:8000:8000"
-
-  nginx:
-    image: nginx:stable-alpine
-    restart: unless-stopped
-    profiles: ["with-nginx"]
-    depends_on:
-      - mcp
-    ports:
-      - "443:443"
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/certs:/etc/nginx/certs:ro

@@ -27,41 +27,47 @@ pip install -r requirements.txt
 python app.py --host 127.0.0.1 --port 8000
 ```
 
-## Production deployment (Linux, Docker)
+## Production deployment (Linux, Docker + your existing nginx)
 
-**Do you need nginx?** Not strictly — uvicorn can terminate TLS itself with
-`--ssl-certfile`/`--ssl-keyfile`, or you may already have a load balancer /
-API gateway in front of this box. Use the `nginx` profile below if you want
-standard cert renewal (certbot/Let's Encrypt), to host this alongside other
-services on the same box, or just prefer a dedicated reverse proxy. Either
-way: **this server must never be reachable over plain HTTP**, since Cognigy
-API keys travel in every request's headers.
+**This server must never be reachable over plain HTTP** — Cognigy API keys
+travel in every request's headers, so TLS termination in front of it is not
+optional.
 
-### Option A — behind your own reverse proxy / load balancer
+If you already run nginx on this host with corporate TLS certificates
+configured (the common case), use that instead of running another nginx:
 
-```
-docker compose up -d
-```
-This starts just the `mcp` service, bound to `127.0.0.1:8000` on the host.
-Point your existing TLS-terminating proxy/load balancer at that.
+1. Start the container:
+   ```
+   docker compose up -d
+   ```
+   This runs just the `mcp` service, bound to `127.0.0.1:8000` on the host —
+   not exposed externally on its own.
 
-### Option B — with the bundled nginx (TLS termination included)
+2. Add `nginx/cognigy-mcp.conf` to your existing nginx. It has two options:
+   - **Option A** (you already have a `server { listen 443 ssl; ... }` block
+     for this host, with your corporate cert already referenced there): copy
+     just the `location /mcp { ... }` block from the file into it.
+   - **Option B** (fresh dedicated site): copy the whole file into
+     `/etc/nginx/conf.d/cognigy-mcp.conf` (or your distro's sites-available +
+     symlink convention), and fill in `server_name` and your corporate
+     certificate paths.
 
-```
-cp nginx/nginx.conf.example nginx/nginx.conf
-# edit nginx/nginx.conf: set server_name, and put your cert/key at
-# nginx/certs/fullchain.pem and nginx/certs/privkey.pem (e.g. from certbot)
-docker compose --profile with-nginx up -d
-```
-This exposes the server at `https://<your-domain>/mcp` on port 443.
-`nginx/nginx.conf` and `nginx/certs/` are gitignored — they're host-specific
-and may contain secrets, so they're never committed.
+3. Reload nginx:
+   ```
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+No separate reverse-proxy container is needed — nginx on the host talks
+straight to the container's published port. If you *don't* already have
+nginx (or prefer a load balancer/API gateway instead), point that at
+`127.0.0.1:8000/mcp` the same way; the container doesn't care what's in front
+of it as long as it's `http://127.0.0.1:8000` from the host's perspective.
 
 ### Rebuilding after a code change
 
 ```
 docker compose build mcp
-docker compose up -d mcp        # or: docker compose --profile with-nginx up -d
+docker compose up -d mcp
 ```
 
 ### Without Docker (systemd + uvicorn directly)
@@ -109,9 +115,9 @@ plugin's `.mcp.json` (see `../plugin/README.md`).
 ## Files
 
 - `Dockerfile` / `.dockerignore` — container image for this server
-- `../docker-compose.yml` — `mcp` service (always) + optional `nginx` service
-  (behind the `with-nginx` profile)
-- `../nginx/nginx.conf.example` — reverse proxy template (TLS termination)
+- `../docker-compose.yml` — the `mcp` service, bound to `127.0.0.1:8000`
+- `../nginx/cognigy-mcp.conf` — drop-in config for your existing nginx
+  (both a location-block snippet and a full standalone server block)
 - `app.py` — the FastMCP app (Streamable HTTP), one `@mcp.tool()` per
   operation, extracting credentials from headers via `Context.request_context.request`
 - `cognigy_client.py` — shared Cognigy REST client (auth, RFC 7807 error

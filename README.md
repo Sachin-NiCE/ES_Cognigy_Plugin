@@ -41,10 +41,10 @@ reconnect.
 
 ## For admins: deploying the server
 
-See `server/README.md` — run it in Docker (recommended; `docker compose up`,
-optionally with a bundled nginx reverse proxy for TLS) or directly with
-uvicorn + systemd on a Linux host. Give the resulting URL to your users for
-step 2 above.
+See `server/README.md` — run it in Docker (`docker compose up`) and put your
+existing nginx (or other TLS-terminating reverse proxy) in front of it using
+`nginx/cognigy-mcp.conf`. Give the resulting URL to your users for step 2
+above.
 
 ## Repo layout
 
@@ -65,8 +65,8 @@ server/
   Dockerfile, .dockerignore
   requirements.txt
   README.md                    — deployment instructions
-docker-compose.yml             — mcp service (+ optional nginx via --profile with-nginx)
-nginx/nginx.conf.example       — reverse proxy template (TLS termination)
+docker-compose.yml             — the mcp service, bound to 127.0.0.1:8000
+nginx/cognigy-mcp.conf         — drop-in config for your existing nginx
 .claude-plugin/marketplace.json — marketplace manifest (source: ./plugin)
 ```
 
