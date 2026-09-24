@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mcp.server.fastmcp import Context, FastMCP
 
 from cognigy_client import CognigyCreds
-from tools import manage_packages, manage_settings, manage_snapshots
+from tools import manage_packages, manage_projects, manage_settings, manage_snapshots
 
 mcp = FastMCP("cognigy", stateless_http=True)
 
@@ -54,6 +54,36 @@ def _creds(ctx: Context) -> CognigyCreds:
             "Claude Code to configure them."
         )
     return CognigyCreds(base_url=base_url, api_key=api_key)
+
+
+# ---------------------------------------------------------------------------
+# Projects (create/list/delete)
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+def list_projects(ctx: Context, limit: int = 25, skip: int = 0) -> dict[str, Any]:
+    """List Cognigy projects."""
+    return manage_projects.list_projects(_creds(ctx), limit=limit, skip=skip)
+
+
+@mcp.tool()
+def create_project(name: str, ctx: Context, description: Optional[str] = None) -> dict[str, Any]:
+    """Create a new Cognigy project. Automatically provisions a default
+    Environment Setup flow (a trimmed, secret-free template - see
+    server/templates/environment_setup/) renamed to match the project name.
+    The template still needs its per-environment baseUrl/client_id/client_secret
+    values filled in for DEV/UAT/PROD before it's usable - tell the user this."""
+    return manage_projects.create_project(_creds(ctx), name, description=description)
+
+
+@mcp.tool()
+def delete_project(project_id: str, ctx: Context, confirm: bool = False) -> dict[str, Any]:
+    """Soft-delete a project: renames it with a DELETE_ prefix. Never a real
+    delete - flows, agents and endpoints inside stay live and reachable.
+    Call with confirm=False first to see the preflight warning; only pass
+    confirm=True after the user has explicitly agreed."""
+    return manage_projects.delete_project(_creds(ctx), project_id, confirm=confirm)
 
 
 # ---------------------------------------------------------------------------

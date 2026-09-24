@@ -1,0 +1,31 @@
+{
+  "_id": "6aaadf23ea5cc89901967aea",
+  "referenceId": "c8d1c032-b6b1-4d83-8e38-83a029ce8504",
+  "type": "code",
+  "label": "Code : UAT url",
+  "comment": "",
+  "commentColor": "",
+  "analyticsLabel": null,
+  "isDisabled": false,
+  "isEntryPoint": false,
+  "localizedData": [
+    {
+      "config": {
+        "code": "api.addToContext(\"configuration.baseUrl\",\"\",\"simple\");\r\napi.addToContext(\"configuration.client_id\",\"\",\"simple\");\r\napi.addToContext(\"configuration.client_secret\",\"\",\"simple\");",
+        "hasError": false,
+        "transpiled": "api.addToContext(\"configuration.baseUrl\",\"\",\"simple\");\napi.addToContext(\"configuration.client_id\",\"\",\"simple\");\napi.addToContext(\"configuration.client_secret\",\"\",\"simple\");\n"
+      },
+      "preview": "",
+      "localeReference": "6aaadf23ea5cc89901967a5c"
+    }
+  ],
+  "mock": {
+    "isEnabled": false,
+    "code": ""
+  },
+  "chartReference": "6aaadf23ea5cc89901967a64",
+  "extension": "@cognigy/basic-nodes",
+  "resourceReference": "6aaadf23ea5cc89901967a63",
+  "projectReference": "6aaadf23ea5cc899019679e2",
+  "organisationReference": "6a342fb597d2e770c710991e"
+}

@@ -100,7 +100,16 @@ Optional: `resources` (list of `{id, import: bool, strategy: "replace" | "re-ide
 
 UI-parity defaults when `resources` is omitted or an item's `strategy` is
 omitted: `knowledgeStore` resources default to `"replace"`; everything else
-defaults to `"re-identify"`. `autoRename` is always applied internally.
+defaults to `"re-identify"`. `autoRename` is always applied internally. If
+`resources` is omitted entirely, ALL resources from the package preview are
+imported (locales excluded — those go through `locale_mapping` instead).
+
+`locale_mapping`'s `packageLocaleId`/`agentLocaleId` must each be that
+locale's own project-local mongo `_id` (confirmed against a live tenant —
+the API returns a 400 "should be of format 'mongo-id'" for either field), not
+the portable UUID `referenceId` the preview also shows for that locale. Get
+the package side's `_id` from `inspect_package`'s `packageResources`, and the
+target side's from `list_exportable_resources`' graph.
 
 ### `read_package_task`
 

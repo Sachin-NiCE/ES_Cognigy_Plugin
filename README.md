@@ -1,8 +1,8 @@
 # ES Cognigy Claude Plugin
 
-Connects Claude Code to Cognigy.AI — manage project snapshots (backup/restore),
-packages (export/import), and project settings (voice preview, Knowledge AI)
-directly from Claude.
+Connects Claude Code to Cognigy.AI — create/list/delete projects, manage
+project snapshots (backup/restore), packages (export/import), and project
+settings (voice preview, Knowledge AI) directly from Claude.
 
 The project has two parts:
 
@@ -54,6 +54,7 @@ plugin/
   .mcp.json                    — points at the hosted server; headers carry
                                   Cognigy credentials (filled in by /cognigy-setup)
   commands/cognigy-setup.md    — the /cognigy-setup command
+  skills/project-lifecycle/    — guidance for list/create/delete_project
   skills/snapshot-backups/     — guidance for list/create/restore/delete_snapshot
   skills/package-management/   — guidance for export/import/download/inspect
   skills/project-settings/     — guidance for set_voice_preview/set_knowledge_ai
@@ -62,9 +63,13 @@ plugin/
 server/
   app.py                       — FastMCP app (Streamable HTTP), one tool per operation
   cognigy_client.py            — shared Cognigy REST client (auth, task polling)
+  tools/manage_projects.py     — project create (with default flow)/list/delete
   tools/manage_snapshots.py    — project backup/restore
   tools/manage_packages.py     — package export/import
   tools/manage_settings.py     — voice preview & Knowledge AI settings
+  templates/environment_setup/ — trimmed, secret-scrubbed default flow
+                                  provisioned by create_project (see
+                                  templates/build_environment_setup_template.py)
   nginx/default.conf.template  — TLS reverse proxy config (bundled in-container)
   supervisord.conf             — runs uvicorn + nginx as sibling processes
   entrypoint.sh                — renders nginx config, checks certs, starts supervisord

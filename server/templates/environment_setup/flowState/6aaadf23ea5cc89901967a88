@@ -1,0 +1,15 @@
+{
+  "_id": "6aaadf23ea5cc89901967a88",
+  "name": "default",
+  "type": "blacklist",
+  "isDefault": true,
+  "referenceId": "54eb35ca-9c02-49b1-be47-a4b78f75caf1",
+  "intentReferences": [],
+  "flowReference": "6aaadf23ea5cc89901967a63",
+  "projectReference": "6aaadf23ea5cc899019679e2",
+  "organisationReference": "6a342fb597d2e770c710991e",
+  "createdAt": 1785321787,
+  "lastChanged": 1785321787,
+  "createdBy": "6a34e1f597d2e770c71132dd",
+  "lastChangedBy": "6a34e1f597d2e770c71132dd"
+}

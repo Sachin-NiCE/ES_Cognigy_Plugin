@@ -137,10 +137,22 @@ def import_package(
 ) -> dict[str, Any]:
     """UI-parity defaults: knowledgeStore resources default to strategy
     "replace", everything else to "re-identify"; autoRename is always True.
+
+    If `resources` is omitted, ALL resources in the package's preview
+    (locales excluded - those go through `locale_mapping` instead) are
+    imported with the UI-parity default strategy.
     """
+    if resources is None:
+        preview = inspect_package(creds, project_id, package_id)
+        resources = [
+            {"id": r["_id"]}
+            for r in preview.get("packageResources", {}).get("resources", [])
+            if r.get("type") != "locale"
+        ]
+
     resource_ids: list[str] = []
     strategies: list[dict[str, Any]] = []
-    for r in resources or []:
+    for r in resources:
         if r.get("import", True) is False:
             continue
         rid = r["id"]
