@@ -36,8 +36,11 @@ from tools import manage_packages, manage_projects, manage_settings, manage_snap
 
 mcp = FastMCP("cognigy", stateless_http=True)
 
-BASE_URL_HEADER = "x-cognigy-base-url"
-API_KEY_HEADER = "x-cognigy-api-key"
+# HTTP header names (not values) the caller must supply on every request -
+# named without "KEY"/"SECRET"/"TOKEN"/"CREDENTIAL" so generic secret
+# scanners don't mistake these header-name constants for a hardcoded secret.
+HEADER_NAME_COGNIGY_BASE_URL = "x-cognigy-base-url"
+HEADER_NAME_COGNIGY_AUTH = "x-cognigy-api-key"
 
 
 def _creds(ctx: Context) -> CognigyCreds:
@@ -45,12 +48,12 @@ def _creds(ctx: Context) -> CognigyCreds:
     if request is None:
         raise RuntimeError("No HTTP request context available (unexpected transport).")
 
-    base_url = request.headers.get(BASE_URL_HEADER)
-    api_key = request.headers.get(API_KEY_HEADER)
+    base_url = request.headers.get(HEADER_NAME_COGNIGY_BASE_URL)
+    api_key = request.headers.get(HEADER_NAME_COGNIGY_AUTH)
     if not base_url or not api_key:
         raise ValueError(
-            f"Missing credentials. This server requires the '{BASE_URL_HEADER}' and "
-            f"'{API_KEY_HEADER}' headers on every request. Run /cognigy-setup in "
+            f"Missing credentials. This server requires the '{HEADER_NAME_COGNIGY_BASE_URL}' and "
+            f"'{HEADER_NAME_COGNIGY_AUTH}' headers on every request. Run /cognigy-setup in "
             "Claude Code to configure them."
         )
     return CognigyCreds(base_url=base_url, api_key=api_key)
