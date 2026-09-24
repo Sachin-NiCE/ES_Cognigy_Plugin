@@ -22,12 +22,20 @@ RUN mkdir -p /etc/nginx/templates /etc/nginx/certs \
     && chmod +x /entrypoint.sh \
     && rmdir nginx
 
-# uvicorn (see supervisord.conf's "user=mcp") drops to this non-root user;
-# nginx's master process and supervisord itself stay root, which nginx
-# requires to bind ports 80/443 (its workers still drop to www-data
-# internally, per the stock Debian nginx config).
-RUN useradd --no-create-home --shell /usr/sbin/nologin mcp
+# The whole container runs as this non-root user (see USER below) - nginx
+# listens on unprivileged ports (8080/8443, see nginx/default.conf.template)
+# so it never needs root to bind them, and docker-compose.yml maps the real
+# 80/443 host ports to those from outside the container instead.
+RUN useradd --no-create-home --shell /usr/sbin/nologin mcp \
+    && mkdir -p /var/lib/nginx /var/log/nginx /run \
+    && chown -R mcp:mcp /var/lib/nginx /var/log/nginx /run /etc/nginx /app \
+    # nginx's stock config drops privileges to www-data after binding as
+    # root, which no longer applies (and would fail) once we're already
+    # non-root - strip that directive so nginx doesn't try it.
+    && sed -i '/^user /d' /etc/nginx/nginx.conf
 
-EXPOSE 80 443
+USER mcp
+
+EXPOSE 8080 8443
 
 ENTRYPOINT ["/entrypoint.sh"]

@@ -1,14 +1,18 @@
 # Rendered at container startup by entrypoint.sh (envsubst), so SERVER_NAME
 # can be set via the environment without rebuilding the image.
+#
+# Listens on unprivileged ports (8080/8443) so nginx never needs root inside
+# the container - docker-compose.yml maps the real 80/443 host ports to
+# these from the outside instead.
 
 server {
-    listen 80;
+    listen 8080;
     server_name ${SERVER_NAME};
     return 301 https://$host$request_uri;
 }
 
 server {
-    listen 443 ssl;
+    listen 8443 ssl;
     server_name ${SERVER_NAME};
 
     ssl_certificate     /etc/nginx/certs/fullchain.pem;

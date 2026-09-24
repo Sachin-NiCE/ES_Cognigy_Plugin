@@ -33,10 +33,15 @@ python app.py --host 127.0.0.1 --port 8000
 travel in every request's headers, so TLS termination is not optional.
 
 nginx runs **inside this same container** alongside the app (managed by
-supervisord — see `supervisord.conf`), terminating TLS on 443 and proxying
-`/mcp` to uvicorn on loopback (`127.0.0.1:8000`, not exposed outside the
-container). No separate nginx container, and no changes to any nginx you
-already run elsewhere on the host.
+supervisord — see `supervisord.conf`), terminating TLS and proxying `/mcp` to
+uvicorn on loopback (`127.0.0.1:8000`, not exposed outside the container). No
+separate nginx container, and no changes to any nginx you already run
+elsewhere on the host.
+
+The whole container runs as a non-root user. nginx listens on unprivileged
+ports 8080/8443 internally rather than 80/443, so it never needs root to
+bind them — `docker-compose.yml`'s port mapping (`"80:8080"`, `"443:8443"`)
+is what puts it on the real 80/443 externally.
 
 1. Put your corporate certificate and key at:
    ```
@@ -116,8 +121,8 @@ plugin's `.mcp.json` (see `../plugin/README.md`).
 ## Files
 
 - `Dockerfile` / `.dockerignore` — image with app + nginx + supervisor
-- `supervisord.conf` — runs uvicorn (as user `mcp`) and nginx (as root, to
-  bind 80/443) as sibling processes
+- `supervisord.conf` — runs uvicorn and nginx as sibling processes, both
+  under the container's non-root user (see Dockerfile's `USER mcp`)
 - `entrypoint.sh` — renders `nginx/default.conf.template` with `SERVER_NAME`
   via `envsubst`, checks certs exist, then execs supervisord
 - `nginx/default.conf.template` — TLS-terminating reverse proxy to

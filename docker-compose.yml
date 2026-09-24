@@ -7,6 +7,10 @@
 # nginx runs INSIDE this container alongside the app (see server/Dockerfile
 # and server/supervisord.conf) and terminates TLS on 443. No separate nginx
 # container or host nginx config is needed.
+#
+# The container itself runs fully non-root and listens on unprivileged ports
+# 8080/8443 internally (see server/nginx/default.conf.template) - the port
+# mappings below are what put it on the real 80/443 externally.
 
 services:
   mcp:
@@ -20,7 +24,7 @@ services:
       # you want nginx to reject requests for other hostnames.
       - SERVER_NAME=${SERVER_NAME:-_}
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:8080"
+      - "443:8443"
     volumes:
       - ./nginx/certs:/etc/nginx/certs:ro

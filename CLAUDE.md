@@ -181,17 +181,25 @@ python -c "import app, asyncio; print([t.name for t in asyncio.run(app.mcp.list_
 ## Docker / nginx deployment
 
 `server/Dockerfile` builds a single image running **both** nginx and uvicorn
-via `supervisord` (`server/supervisord.conf`) — nginx (root, binds 80/443)
-terminates TLS and reverse-proxies `/mcp` to uvicorn on loopback
-(`127.0.0.1:8000`, run as the unprivileged `mcp` user). `server/entrypoint.sh`
-renders `server/nginx/default.conf.template` with the `SERVER_NAME` env var
-via `envsubst`, fails fast if `/etc/nginx/certs/{fullchain,privkey}.pem` are
-missing, then execs supervisord.
+via `supervisord` (`server/supervisord.conf`), with the whole container
+running as the non-root `mcp` user (`USER mcp`, no root anywhere at runtime —
+a container that ran fully as root was a real HIGH-severity Aikido finding,
+fixed by this design, not by any earlier attempt at it). nginx terminates TLS
+and reverse-proxies `/mcp` to uvicorn on loopback (`127.0.0.1:8000`). To bind
+without root, nginx listens on unprivileged ports **8080/8443** internally
+(`server/nginx/default.conf.template`) rather than 80/443 — `docker-compose.yml`'s
+port mapping (`"80:8080"`, `"443:8443"`) is what puts it on the real 80/443
+externally. `server/entrypoint.sh` renders that template with the
+`SERVER_NAME` env var via `envsubst`, fails fast if
+`/etc/nginx/certs/{fullchain,privkey}.pem` are missing, then execs
+supervisord.
 
-`docker-compose.yml` (repo root) builds/runs this, publishing 80/443 and
-mounting `nginx/certs/` (repo root, gitignored — real certs never committed)
-read-only into the container. This intentionally does *not* rely on or
-configure any nginx already running on the host — TLS termination is fully
+`docker-compose.yml` (repo root) builds/runs this and mounts `nginx/certs/`
+(repo root, gitignored — real certs never committed) read-only into the
+container; since the container runs as a non-root uid, the mounted cert/key
+files need to be readable by that uid on the host. This intentionally does
+*not* rely on or configure any nginx already running on the host — TLS
+termination is fully
 self-contained in the container. See `server/README.md` for the full
 deployment walkthrough.
 
