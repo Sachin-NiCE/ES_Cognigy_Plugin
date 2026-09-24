@@ -1,0 +1,13 @@
+{
+  "_id": "6aaadf23ea5cc89901967a5c",
+  "referenceId": "0ab7b39d-e45e-4381-87d2-7ce19a637d8f",
+  "name": "en-US",
+  "primary": true,
+  "nluLanguage": "en-US",
+  "projectReference": "6aaadf23ea5cc899019679e2",
+  "organisationReference": "6a342fb597d2e770c710991e",
+  "createdAt": 1781883612,
+  "lastChanged": 1781883612,
+  "createdBy": "6a3504e197d2e770c71142f1",
+  "lastChangedBy": "6a3504e197d2e770c71142f1"
+}

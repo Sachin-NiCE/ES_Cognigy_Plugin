@@ -1,0 +1,14 @@
+{
+  "name": "es-cognigy-plugin-dev",
+  "owner": {
+    "name": "Sachin Pujari",
+    "email": "sachin.pujari@nice.com"
+  },
+  "plugins": [
+    {
+      "name": "cognigy",
+      "source": "./plugin",
+      "description": "Connect Claude Code to Cognigy.AI via a centrally hosted MCP server (snapshots, packages, project settings)"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "cognigyVersion": "unknown",
+  "type": "package",
+  "name": "environment-setup-template",
+  "description": "Trimmed, secret-scrubbed Environment Setup flow template used by create_project.",
+  "skippedResources": [],
+  "partial": false,
+  "missingTypes": []
+}

@@ -1,0 +1,91 @@
+{
+  "_id": "6aaadf23ea5cc89901967a64",
+  "relations": [
+    {
+      "node": "6aaadf23ea5cc89901967adb",
+      "children": [],
+      "next": "6aaadf23ea5cc89901967adc",
+      "_id": "6aaadf23ea5cc89901967add"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967ade",
+      "children": [],
+      "next": null,
+      "_id": "6aaadf23ea5cc89901967adf"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967ae0",
+      "children": [
+        "6aaadf23ea5cc89901967ae1",
+        "6aaadf23ea5cc89901967ae2",
+        "6aaadf23ea5cc89901967ae3",
+        "6aaadf23ea5cc89901967ae4"
+      ],
+      "next": "6aaadf23ea5cc89901967ade",
+      "_id": "6aaadf23ea5cc89901967ae6"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967ae1",
+      "children": [],
+      "next": null,
+      "_id": "6aaadf23ea5cc89901967ae7"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967ae2",
+      "children": [],
+      "next": "6aaadf23ea5cc89901967ae8",
+      "_id": "6aaadf23ea5cc89901967ae9"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967ae3",
+      "children": [],
+      "next": "6aaadf23ea5cc89901967aea",
+      "_id": "6aaadf23ea5cc89901967aeb"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967ae4",
+      "children": [],
+      "next": "6aaadf23ea5cc89901967aec",
+      "_id": "6aaadf23ea5cc89901967aed"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967ae8",
+      "children": [],
+      "next": null,
+      "_id": "6aaadf23ea5cc89901967aee"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967aea",
+      "children": [],
+      "next": null,
+      "_id": "6aaadf23ea5cc89901967aef"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967aec",
+      "children": [],
+      "next": null,
+      "_id": "6aaadf23ea5cc89901967af0"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967af1",
+      "children": [],
+      "next": "6aaadf23ea5cc89901967b00",
+      "_id": "6aaadf23ea5cc89901967af3"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967adc",
+      "children": [],
+      "next": "6aaadf23ea5cc89901967af1",
+      "_id": "6aaadf23ea5cc89901967aff"
+    },
+    {
+      "node": "6aaadf23ea5cc89901967b00",
+      "children": [],
+      "next": "6aaadf23ea5cc89901967ae0",
+      "_id": "6aaadf23ea5cc89901967b02"
+    }
+  ],
+  "resourceReference": "6aaadf23ea5cc89901967a63",
+  "projectReference": "6aaadf23ea5cc899019679e2",
+  "organisationReference": "6a342fb597d2e770c710991e"
+}

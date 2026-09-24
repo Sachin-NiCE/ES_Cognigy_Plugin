@@ -1,0 +1,19 @@
+{
+  "_id": "6aaadf23ea5cc89901967a9c",
+  "continueExecutionAfterAttachedFlow": false,
+  "continueExecutionAfterDefaultReply": false,
+  "continueExecutionAfterNegativeConfirmation": false,
+  "passDefaultRepliesIntoFlow": false,
+  "flowIntentMappingOrder": "joint",
+  "useAttachedFlowThresholds": true,
+  "useAttachedFlowContinueAfterDefaultReply": true,
+  "useAttachedFlowPassDefaultRepliesIntoFlow": true,
+  "implicitSlotParsing": "disabled",
+  "useAttachedFlowImplicitSlotParsing": false,
+  "useIntentDefaultRepliesAsExamples": true,
+  "flowReference": "6aaadf23ea5cc89901967a63",
+  "projectReference": "6aaadf23ea5cc899019679e2",
+  "organisationReference": "6a342fb597d2e770c710991e",
+  "lexiconSlotsWithSubMatches": false,
+  "localeSettings": []
+}

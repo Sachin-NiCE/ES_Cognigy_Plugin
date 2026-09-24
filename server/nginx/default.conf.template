@@ -1,0 +1,38 @@
+# Rendered at container startup by entrypoint.sh (envsubst), so SERVER_NAME
+# can be set via the environment without rebuilding the image.
+#
+# Listens on unprivileged ports (8080/8443) so nginx never needs root inside
+# the container - docker-compose.yml maps the real 80/443 host ports to
+# these from the outside instead.
+
+server {
+    listen 8080;
+    server_name ${SERVER_NAME};
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 8443 ssl;
+    server_name ${SERVER_NAME};
+
+    ssl_certificate     /etc/nginx/certs/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
+
+    # Cognigy API keys travel in request headers on every call - never allow
+    # this proxy to fall back to plain HTTP, and don't log these headers
+    # (nginx's default access log format doesn't include request headers).
+    location /mcp {
+        proxy_pass http://127.0.0.1:8000/mcp;
+        proxy_http_version 1.1;
+
+        # Streamable HTTP can hold a connection open for server-sent events;
+        # don't let nginx's defaults cut that off or buffer it.
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_read_timeout 3600s;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "cognigy",
+  "description": "Connect Claude Code to Cognigy.AI (projects, snapshots, packages, project settings) via a centrally hosted MCP server.",
+  "version": "0.4.0",
+  "author": {
+    "name": "Sachin Pujari",
+    "email": "sachin.pujari@nice.com"
+  },
+  "commands": [
+    "./commands/cognigy-setup.md"
+  ],
+  "skills": [
+    "./skills/project-lifecycle/SKILL.md",
+    "./skills/snapshot-backups/SKILL.md",
+    "./skills/package-management/SKILL.md",
+    "./skills/project-settings/SKILL.md"
+  ],
+  "mcpServers": "./.mcp.json"
+}
