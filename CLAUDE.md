@@ -186,10 +186,13 @@ running as the non-root `mcp` user (`USER mcp`, no root anywhere at runtime —
 a container that ran fully as root was a real HIGH-severity Aikido finding,
 fixed by this design, not by any earlier attempt at it). nginx terminates TLS
 and reverse-proxies `/mcp` to uvicorn on loopback (`127.0.0.1:8000`). To bind
-without root, nginx listens on unprivileged ports **8080/8443** internally
-(`server/nginx/default.conf.template`) rather than 80/443 — `docker-compose.yml`'s
-port mapping (`"80:8080"`, `"443:8443"`) is what puts it on the real 80/443
-externally. `server/entrypoint.sh` renders that template with the
+without root, nginx listens on unprivileged port **8443** internally
+(`server/nginx/default.conf.template`, HTTPS only — no HTTP/redirect is
+published since this is an API-only service) rather than 443 —
+`docker-compose.yml`'s port mapping (`"${HTTPS_PORT:-443}:8443"`) is what
+puts it on the real HTTPS port externally; override `HTTPS_PORT` when 443 is
+already taken on the host (common on a shared box running multiple stacks).
+`server/entrypoint.sh` renders that template with the
 `SERVER_NAME` env var via `envsubst`, fails fast if
 `/etc/nginx/certs/{fullchain,privkey}.pem` are missing, then execs
 supervisord.

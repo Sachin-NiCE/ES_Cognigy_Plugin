@@ -38,10 +38,11 @@ uvicorn on loopback (`127.0.0.1:8000`, not exposed outside the container). No
 separate nginx container, and no changes to any nginx you already run
 elsewhere on the host.
 
-The whole container runs as a non-root user. nginx listens on unprivileged
-ports 8080/8443 internally rather than 80/443, so it never needs root to
-bind them — `docker-compose.yml`'s port mapping (`"80:8080"`, `"443:8443"`)
-is what puts it on the real 80/443 externally.
+The whole container runs as a non-root user. nginx listens on an
+unprivileged port (8443) internally rather than 443, so it never needs root
+to bind it — `docker-compose.yml`'s port mapping (`"${HTTPS_PORT:-443}:8443"`)
+is what puts it on the real HTTPS port externally. Only HTTPS is published
+(no plain-HTTP redirect exposed) since this is an API-only service.
 
 1. Put your corporate certificate and key at:
    ```
@@ -57,15 +58,21 @@ is what puts it on the real 80/443 externally.
    SERVER_NAME=cognigy-mcp.internal.example.com
    ```
 
-3. Build and start:
+3. If port 443 is already taken on this host (common on a shared box running
+   multiple stacks — check with `sudo ss -tlnp | grep :443`), set
+   `HTTPS_PORT` to a free one instead, in the same `.env` file:
+   ```
+   HTTPS_PORT=8446
+   ```
+
+4. Build and start:
    ```
    docker compose up -d --build
    ```
-   This publishes 80 (redirects to 443) and 443 on the host.
 
-4. Verify: `docker compose logs -f` should show both `uvicorn` and `nginx`
-   started via supervisord; `curl -vk https://localhost/mcp` should get a
-   response (not a connection error or TLS failure).
+5. Verify: `docker compose logs -f` should show both `uvicorn` and `nginx`
+   started via supervisord; `curl -vk https://localhost:${HTTPS_PORT:-443}/mcp`
+   should get a response (not a connection error or TLS failure).
 
 ### Rebuilding after a code or cert change
 
@@ -127,8 +134,8 @@ plugin's `.mcp.json` (see `../plugin/README.md`).
   via `envsubst`, checks certs exist, then execs supervisord
 - `nginx/default.conf.template` — TLS-terminating reverse proxy to
   `127.0.0.1:8000/mcp`, streaming-friendly (no buffering, long read timeout)
-- `../docker-compose.yml` — builds/runs this container, publishes 80/443,
-  mounts `../nginx/certs` read-only
+- `../docker-compose.yml` — builds/runs this container, publishes HTTPS
+  (443 by default, override with `HTTPS_PORT`), mounts `../nginx/certs` read-only
 - `../nginx/certs/` — put your corporate `fullchain.pem`/`privkey.pem` here
   (gitignored)
 - `app.py` — the FastMCP app (Streamable HTTP), one `@mcp.tool()` per
