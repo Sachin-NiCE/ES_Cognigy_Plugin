@@ -1,0 +1,34 @@
+# Usage:
+#   1. Put your corporate certificate + key at nginx/certs/fullchain.pem and
+#      nginx/certs/privkey.pem (see nginx/certs/README.md).
+#   2. Optionally set SERVER_NAME (below) to your real hostname.
+#   3. If port 443 is already taken on this host (common on a shared box
+#      running multiple stacks), set HTTPS_PORT to a free one instead, e.g.
+#      in a .env file next to this compose file: HTTPS_PORT=8446
+#   4. docker compose up -d --build
+#
+# nginx runs INSIDE this container alongside the app (see server/Dockerfile
+# and server/supervisord.conf) and terminates TLS. No separate nginx
+# container or host nginx config is needed.
+#
+# The container itself runs fully non-root and listens on an unprivileged
+# port (8443) internally (see server/nginx/default.conf.template) - the
+# port mapping below is what puts it on the real HTTPS port externally.
+# Only HTTPS is published; this is an API-only service, so there's no
+# browser traffic that needs an HTTP-to-HTTPS redirect exposed externally.
+
+services:
+  mcp:
+    build:
+      context: ./server
+    image: cognigy-mcp:latest
+    restart: unless-stopped
+    environment:
+      # nginx server_name; "_" (default) matches any hostname, which is fine
+      # for an IP-only or single-purpose host. Set this to your real FQDN if
+      # you want nginx to reject requests for other hostnames.
+      - SERVER_NAME=${SERVER_NAME:-_}
+    ports:
+      - "${HTTPS_PORT:-443}:8443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:ro

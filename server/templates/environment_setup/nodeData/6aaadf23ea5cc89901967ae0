@@ -1,0 +1,34 @@
+{
+  "_id": "6aaadf23ea5cc89901967ae0",
+  "referenceId": "85b548c0-3739-4380-997c-7161e4f4c25c",
+  "type": "switch",
+  "label": "Lookup Environment",
+  "comment": "",
+  "commentColor": "",
+  "analyticsLabel": null,
+  "isDisabled": false,
+  "isEntryPoint": false,
+  "localizedData": [
+    {
+      "config": {
+        "switch": {
+          "type": "cognigyScript",
+          "operator": "context.configuration.environment"
+        },
+        "intentLevel": "input.intent",
+        "useStrict": ""
+      },
+      "preview": "context.configuration.environment",
+      "localeReference": "6aaadf23ea5cc89901967a5c"
+    }
+  ],
+  "chartReference": "6aaadf23ea5cc89901967a64",
+  "extension": "@cognigy/basic-nodes",
+  "resourceReference": "6aaadf23ea5cc89901967a63",
+  "projectReference": "6aaadf23ea5cc899019679e2",
+  "organisationReference": "6a342fb597d2e770c710991e",
+  "mock": {
+    "isEnabled": false,
+    "code": ""
+  }
+}

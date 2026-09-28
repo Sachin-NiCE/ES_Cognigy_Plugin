@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Real certificates/keys are secrets - only nginx/certs/README.md is tracked.
+nginx/certs/*.pem
+nginx/certs/*.key
+nginx/certs/*.crt

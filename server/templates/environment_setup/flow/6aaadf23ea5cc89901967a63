@@ -1,0 +1,22 @@
+{
+  "_id": "6aaadf23ea5cc89901967a63",
+  "referenceId": "23ff7f06-96b5-4731-ac8c-091707bbfcb2",
+  "name": "Environment_Setup",
+  "description": "Initializes API urls,set session config and one time activity based on Environment",
+  "context": {},
+  "attachedFlows": [],
+  "localizedData": [
+    {
+      "attachedLexiconReferences": [],
+      "localeReference": "6aaadf23ea5cc89901967a5c"
+    }
+  ],
+  "img": "",
+  "projectReference": "6aaadf23ea5cc899019679e2",
+  "organisationReference": "6a342fb597d2e770c710991e",
+  "createdAt": 1785321787,
+  "lastChanged": 1789154857,
+  "createdBy": "6a34e1f597d2e770c71132dd",
+  "lastChangedBy": "6a34e1f597d2e770c71132dd",
+  "chartReference": "6aaadf23ea5cc89901967a64"
+}
