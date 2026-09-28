@@ -30,11 +30,26 @@ from typing import Any, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 from cognigy_client import CognigyCreds
 from tools import manage_packages, manage_projects, manage_settings, manage_snapshots
 
-mcp = FastMCP("cognigy", stateless_http=True)
+# FastMCP defaults `host` to "127.0.0.1", which auto-enables DNS-rebinding
+# protection that only trusts a Host header of 127.0.0.1/localhost - fine for
+# a server you talk to directly, but this one always sits behind nginx
+# terminating TLS for a real public hostname (see server/nginx/), which
+# forwards the client's actual Host header. Without this, every request gets
+# rejected with 421 "Invalid Host header" before it reaches any tool.
+# Disabling it here isn't a real exposure: nginx's own `server_name` already
+# gates which Host it forwards at all, and every tool call additionally
+# requires the caller's own Cognigy credentials via _creds() below - that,
+# not this Host check, is the actual auth boundary for this server.
+mcp = FastMCP(
+    "cognigy",
+    stateless_http=True,
+    transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
+)
 
 # HTTP header names (not values) the caller must supply on every request -
 # named without "KEY"/"SECRET"/"TOKEN"/"CREDENTIAL" so generic secret
