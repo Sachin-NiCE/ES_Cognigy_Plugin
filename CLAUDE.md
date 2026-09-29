@@ -42,11 +42,24 @@ Every tool function in `server/app.py` takes a `ctx: Context` parameter for
 this reason; every function in `server/tools/*.py` takes a `creds:
 CognigyCreds` (a `NamedTuple(base_url, api_key)`) as its first argument.
 
-The plugin's `plugin/.mcp.json` sends these headers on every request; the
-`/cognigy-setup` command (`plugin/commands/cognigy-setup.md`) edits that file
-directly (via Claude's own Edit tool) rather than running any script. Real
-credential values must never be committed — the file lives with placeholder
-values in the repo and gets real values written locally per user.
+The plugin's `plugin/.mcp.json` sends these headers on every request, but it
+does **not** hold real values itself — it references three environment
+variables (`${COGNIGY_MCP_URL}`, `${COGNIGY_API_BASE_URL}`,
+`${COGNIGY_API_KEY}`) via Claude Code's native `.mcp.json` `${VAR}`
+substitution. This is deliberate: `.mcp.json` lives inside the plugin's
+install directory, which Claude Code re-copies fresh from the marketplace
+source every time the plugin is installed or the marketplace is
+refreshed/re-added — a real value written into that file (the original
+design) was silently wiped on the next reinstall, which was a real bug hit
+in practice (a working setup broke after `/plugin marketplace remove` +
+re-add, surfacing as `getaddrinfo ENOTFOUND` against the literal
+`REPLACE-WITH-...` placeholder). OS-level environment variables aren't part
+of that reinstall, so they survive it. The `/cognigy-setup` command
+(`plugin/commands/cognigy-setup.md`) sets these permanently (`setx` on
+Windows, appended to the shell profile on macOS/Linux) rather than editing
+`.mcp.json`. Real credential values must never be committed — `.mcp.json`
+itself only ever contains the `${VAR}` placeholders, which is safe to check
+in as-is.
 
 This passthrough design was a deliberate simplicity/security tradeoff
 (discussed in-session): a real Cognigy key ends up in plaintext in every
