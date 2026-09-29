@@ -2,10 +2,10 @@
   "mcpServers": {
     "cognigy": {
       "type": "streamable-http",
-      "url": "https://REPLACE-WITH-YOUR-COGNIGY-MCP-SERVER/mcp",
+      "url": "${COGNIGY_MCP_URL}",
       "headers": {
-        "X-Cognigy-Base-Url": "",
-        "X-Cognigy-Api-Key": ""
+        "X-Cognigy-Base-Url": "${COGNIGY_API_BASE_URL}",
+        "X-Cognigy-Api-Key": "${COGNIGY_API_KEY}"
       }
     }
   }
